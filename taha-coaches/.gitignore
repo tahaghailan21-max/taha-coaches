@@ -21,7 +21,7 @@ target/
 #app.properties
 taha-coaches/src/main/resources/application.properties
 #node modules
-**/node_modules/
+taha-coaches-front/node_modules/
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
