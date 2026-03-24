@@ -86,27 +86,12 @@ export class LoginComponent {
   private apiUrl = environment.apiUrl;
 
   loginWithGoogle() {
-    const width = 500;
-    const height = 600;
-    const left = window.innerWidth / 2 - width / 2;
-    const top = window.innerHeight / 2 - height / 2;
-
-    const backendOrigin = this.apiUrl;
-
-    const listener = (event: MessageEvent) => {
-      console.log('Message received:', event.data);
-      // Optional: check origin
-      const user = event.data as User;
-      console.log('Logged in user:', user);
-      window.removeEventListener('message', listener);
-    };
-
-    window.addEventListener('message', listener);
-
-    const popup = window.open(
-      `${backendOrigin}/oauth2/authorization/google`,
-      'google-login',
-      `width=${width},height=${height},top=${top},left=${left}`
-    );
+    this.authService.loginWithProvider('google')
+      .then(user => {
+        console.log('Logged in user:', user);
+      })
+      .catch(err => {
+        console.error('Login failed:', err);
+      });
   }
 }

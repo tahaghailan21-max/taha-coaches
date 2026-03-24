@@ -18,7 +18,10 @@ target/
 *.iws
 *.iml
 *.ipr
-
+#app.properties
+taha-coaches/src/main/resources/application.properties
+#node modules
+**/node_modules/
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
