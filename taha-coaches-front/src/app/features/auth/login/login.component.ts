@@ -1,12 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../core/services/auth/auth.service';
-import {environment} from "../../../environments/environment";
-import {User} from "../../../core/models/user.model";
+import { TranslateService } from '@ngx-translate/core';
+import { SharedTranslateModule } from '../../../core/shared-translate.module';
+import { environment } from '../../../environments/environment';
+import { User } from '../../../core/models/user.model';
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [],
+  imports: [SharedTranslateModule, CommonModule],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-background dark:bg-dark-background p-6">
 
@@ -16,11 +19,12 @@ import {User} from "../../../core/models/user.model";
 
         <!-- Welcome Title -->
         <h1 class="text-4xl sm:text-5xl font-extrabold text-primary dark:text-dark-primary mb-4 sm:mb-6">
-          Welcome!
+          {{ 'login.title' | translate }}
         </h1>
 
+        <!-- Social Prompt -->
         <p class="text-base sm:text-lg text-secondary dark:text-dark-secondary mb-8">
-          Sign in with one of your socials:
+          {{ 'login.socialPrompt' | translate }}
         </p>
 
         <!-- Social Buttons -->
@@ -29,7 +33,7 @@ import {User} from "../../../core/models/user.model";
           <!-- Google -->
           <button
             (click)="loginWithGoogle()"
-            class="flex items-center justify-center gap-3 w-full bg-white dark:bg-gray-700
+            class="flex items-center justify-center gap-3 w-full text-black dark:text-white bg-white dark:bg-gray-700
                    border border-gray-300 dark:border-gray-600 rounded-xl py-4 shadow-md
                    hover:shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600
                    transition-all duration-300 transform hover:-translate-y-1"
@@ -40,7 +44,7 @@ import {User} from "../../../core/models/user.model";
               <path fill="#FBBC05" d="M120 326.5c-10.2-30.4-10.2-63.5 0-93.9l-88.1-68.4C6.6 220.2 0 245.5 0 272s6.6 51.8 31.9 107.9l88.1-68.4z"/>
               <path fill="#EA4335" d="M272 108.7c38.8-.6 73.7 13.7 101.1 39.5l75.6-75.6C404.8 24.6 344.7 0 272 0 162.1 0 75.1 65.5 31.9 150.6l88.1 68.4c21.3-64.4 81.2-112.2 152-110.3z"/>
             </svg>
-            Google
+            {{ 'login.google' | translate }}
           </button>
 
           <!-- Facebook -->
@@ -50,48 +54,45 @@ import {User} from "../../../core/models/user.model";
                    transition-all duration-300 transform hover:-translate-y-1"
           >
             <i class="bi bi-facebook text-lg"></i>
-            Facebook
-          </button>
-
-          <!-- Apple -->
-          <button
-            class="flex items-center justify-center gap-3 w-full bg-black text-white
-                   rounded-xl py-4 shadow-md hover:shadow-lg
-                   transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <i class="bi bi-apple text-lg"></i>
-            Apple
-          </button>
-
-          <!-- Twitter -->
-          <button
-            class="flex items-center justify-center gap-3 w-full bg-[#1DA1F2] text-white
-                   rounded-xl py-4 shadow-md hover:shadow-lg
-                   transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <i class="bi bi-twitter text-lg"></i>
-            Twitter
+            {{ 'login.facebook' | translate }}
           </button>
 
         </div>
+
+        <!-- Error Message -->
+        <p *ngIf="error" class="text-red-500 mt-4">
+          {{ 'login.error' | translate }}
+        </p>
 
       </div>
     </div>
   `,
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
-  constructor(private authService: AuthService) {}
+export class LoginComponent implements OnInit {
+  error = false;
 
-  private apiUrl = environment.apiUrl;
+  constructor(
+    private authService: AuthService,
+    private translate: TranslateService
+  ) {}
+
+  ngOnInit() {
+    // Set default language and use browser language if supported
+    this.translate.setDefaultLang('en');
+    const browserLang = this.translate.getBrowserLang();
+    this.translate.use(browserLang?.match(/en|fr/) ? browserLang : 'en');
+  }
 
   loginWithGoogle() {
     this.authService.loginWithProvider('google')
       .then(user => {
         console.log('Logged in user:', user);
+        this.error = false;
       })
       .catch(err => {
         console.error('Login failed:', err);
+        this.error = true;
       });
   }
 }
