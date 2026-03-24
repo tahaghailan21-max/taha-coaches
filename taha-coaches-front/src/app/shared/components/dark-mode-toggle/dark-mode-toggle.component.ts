@@ -1,9 +1,10 @@
 import {Component, OnInit} from '@angular/core';
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: 'app-dark-mode-toggle',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './dark-mode-toggle.component.html',
   styleUrl: './dark-mode-toggle.component.scss'
 })

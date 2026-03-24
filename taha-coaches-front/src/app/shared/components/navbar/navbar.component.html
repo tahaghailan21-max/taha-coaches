@@ -1,1 +1,67 @@
-<p>navbar works!</p>
+<nav class="bg-surface dark:bg-dark-surface shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+
+      <!-- Logo -->
+      <div class="flex-shrink-0">
+        <a
+          routerLink="/"
+          class="text-primary dark:text-dark-primary font-bold text-xl
+           hover:text-accent dark:hover:text-dark-accent transition-colors duration-200"
+        >
+          TC
+        </a>
+      </div>
+
+      <!-- Navigation Links (Center) -->
+      <div class="hidden md:flex space-x-4 mx-auto h-full">
+      <a
+        routerLink="/"
+        class="flex items-center justify-center px-5 h-full rounded-3xl text-secondary dark:text-dark-secondary hover:text-accent dark:hover:text-dark-accent
+           hover:bg-primary/20 dark:hover:bg-dark-primary/20 transition transform hover:scale-105 hover:shadow-sm"
+      >
+        Home
+      </a>
+      <a
+        routerLink="/services"
+        class="flex items-center justify-center px-5 h-full rounded-3xl text-secondary dark:text-dark-secondary hover:text-accent dark:hover:text-dark-accent
+           hover:bg-primary/20 dark:hover:bg-dark-primary/20 transition transform hover:scale-105 hover:shadow-sm"
+      >
+        Services
+      </a>
+      <a
+        routerLink="/book"
+        class="flex items-center justify-center px-5 h-full rounded-3xl text-secondary dark:text-dark-secondary hover:text-accent dark:hover:text-dark-accent
+           hover:bg-primary/20 dark:hover:bg-dark-primary/20 transition transform hover:scale-105 hover:shadow-sm"
+      >
+        Book Session
+      </a>
+      <a
+        routerLink="/contact"
+        class="flex items-center justify-center px-5 h-full rounded-3xl text-secondary dark:text-dark-secondary hover:text-accent dark:hover:text-dark-accent
+           hover:bg-primary/20 dark:hover:bg-dark-primary/20 transition transform hover:scale-105 hover:shadow-sm"
+      >
+        Contact
+      </a>
+    </div>
+
+      <!-- Right-side controls -->
+      <div class="flex items-center space-x-3">
+
+        <!-- Login Button (rounded like toggle) -->
+        <button
+          routerLink="/login"
+          class="flex items-center gap-2 px-4 h-8 rounded-full bg-primary dark:bg-dark-primary text-white dark:text-dark-background hover:bg-opacity-90 transition"
+        >
+          <i class="bi bi-person-fill"></i>
+          Login
+        </button>
+
+        <!-- Dark Mode Toggle -->
+        <app-dark-mode-toggle></app-dark-mode-toggle>
+
+      </div>
+
+    </div>
+  </div>
+</nav>

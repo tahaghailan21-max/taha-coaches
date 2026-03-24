@@ -1,1 +1,40 @@
-<p>footer works!</p>
+<footer class="bg-surface dark:bg-dark-surface text-secondary dark:text-dark-secondary">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <!-- About Section -->
+    <div>
+      <h3 class="text-primary dark:text-dark-primary font-bold text-lg mb-3">Taha Coaching</h3>
+      <p class="text-secondary dark:text-dark-secondary text-sm">
+        Helping you achieve your fitness and personal goals with tailored coaching sessions and guidance.
+      </p>
+    </div>
+
+    <!-- Quick Links -->
+    <div>
+      <h3 class="text-primary dark:text-dark-primary font-bold text-lg mb-3">Quick Links</h3>
+      <ul class="space-y-2">
+        <li><a routerLink="/" class="hover:text-primary dark:hover:text-dark-primary">Home</a></li>
+        <li><a routerLink="/about" class="hover:text-primary dark:hover:text-dark-primary">About</a></li>
+        <li><a routerLink="/services" class="hover:text-primary dark:hover:text-dark-primary">Services</a></li>
+        <li><a routerLink="/book" class="hover:text-primary dark:hover:text-dark-primary">Book Session</a></li>
+        <li><a routerLink="/contact" class="hover:text-primary dark:hover:text-dark-primary">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- Contact Info -->
+    <div>
+      <h3 class="text-primary dark:text-dark-primary font-bold text-lg mb-3">Contact</h3>
+      <ul class="space-y-2 text-sm">
+        <li>Email: <a href="mailto:info@tahacoaching.com" class="hover:text-primary dark:hover:text-dark-primary">infotahacoaching.com</a></li>
+        <li>Phone: <a href="tel:+212600000000" class="hover:text-primary dark:hover:text-dark-primary">+212 600 000 000</a></li>
+        <li>Location: Casablanca, Morocco</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="border-t border-secondary dark:border-dark-secondary mt-4 py-4 text-center text-sm">
+    © {{ currentYear }} Taha Coaching. All rights reserved.
+  </div>
+</footer>

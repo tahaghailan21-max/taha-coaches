@@ -1,6 +1,12 @@
-<button
+<div
   (click)="toggleDarkMode()"
-  class="px-4 py-2 rounded-lg bg-primary text-white dark:bg-dark-primary dark:text-dark-background transition-colors"
+  class="w-16 h-8 bg-yellow-400 dark:bg-gray-700 rounded-full p-1 cursor-pointer relative transition-colors duration-300"
 >
-  {{ isDarkMode ? '🌙 Dark Mode' : '☀️ Light Mode' }}
-</button>
+  <!-- Toggle Knob -->
+  <div
+    class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md absolute top-1 transition-transform duration-300"
+    [ngStyle]="{'transform': isDarkMode ? 'translateX(0)' : 'translateX(32px)'}"
+  >
+    <i class="bi" [ngClass]="isDarkMode ? 'bi-moon-fill text-gray-800' : 'bi-brightness-high-fill text-yellow-500'"></i>
+  </div>
+</div>
