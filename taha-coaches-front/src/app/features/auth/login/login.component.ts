@@ -64,9 +64,7 @@ import {CommonModule} from "@angular/common";
 
       </div>
     </div>
-  `,
-  styleUrls: ['./login.component.scss']
-})
+  `})
 export class LoginComponent implements OnInit {
   error = false;
 
