@@ -36,6 +36,9 @@ public class User {
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl; // Can store the R2 object key or full URL
+
     @PrePersist
     public void prePersist() {
         this.createdAt = Instant.now();

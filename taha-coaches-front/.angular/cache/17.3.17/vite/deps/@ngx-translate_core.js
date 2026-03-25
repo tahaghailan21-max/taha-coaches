@@ -34,8 +34,9 @@ import {
   provideTranslateParser,
   provideTranslateService,
   setValue
-} from "./chunk-3QB44WZE.js";
-import "./chunk-ZDKY76ZE.js";
+} from "./chunk-DKPXA63Z.js";
+import "./chunk-OMBF2H2D.js";
+import "./chunk-T4QU4GDF.js";
 export {
   DefaultMissingTranslationHandler,
   ITranslateService,

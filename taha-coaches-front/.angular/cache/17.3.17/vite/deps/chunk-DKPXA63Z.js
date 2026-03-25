@@ -7,27 +7,29 @@ import {
   Input,
   NgModule,
   Pipe,
-  Subject,
-  __spreadValues,
-  concat,
-  concatMap,
-  defer,
-  forkJoin,
   inject,
-  isObservable,
-  map,
-  of,
   setClassMetadata,
-  shareReplay,
-  switchMap,
-  take,
   ɵɵdefineDirective,
   ɵɵdefineInjectable,
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵdefinePipe,
   ɵɵgetInheritedFactory
-} from "./chunk-ZDKY76ZE.js";
+} from "./chunk-OMBF2H2D.js";
+import {
+  Subject,
+  __spreadValues,
+  concat,
+  concatMap,
+  defer,
+  forkJoin,
+  isObservable,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+  take
+} from "./chunk-T4QU4GDF.js";
 
 // node_modules/@ngx-translate/core/fesm2022/ngx-translate-core.mjs
 function _(key) {
@@ -1264,4 +1266,4 @@ export {
   defaultProviders,
   TranslateModule
 };
-//# sourceMappingURL=chunk-3QB44WZE.js.map
+//# sourceMappingURL=chunk-DKPXA63Z.js.map

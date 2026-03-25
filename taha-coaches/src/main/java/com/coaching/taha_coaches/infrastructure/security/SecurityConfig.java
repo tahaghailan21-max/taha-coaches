@@ -32,7 +32,7 @@ SecurityConfig {
 //                                auth.requestMatchers("/**").permitAll()
 //                                .requestMatchers("/api/oauth2/**", "/api/public/**").permitAll()
 //                                .anyRequest().authenticated()
-                                auth.requestMatchers("/api/public/**", "/login/**", "/oauth2/**").permitAll()
+                                auth.requestMatchers("/api/public/**", "/login/**", "/oauth2/**", "/api/test-r2/**").permitAll()
                                 .anyRequest().authenticated()
 
 

@@ -6,4 +6,5 @@ export interface User {
   provider: string;
   providerId: string;
   createdAt: string;
+  avatarUrl?: string; // <- add this
 }

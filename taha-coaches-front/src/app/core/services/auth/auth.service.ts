@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import {environment} from "../../../environments/environment";
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {User} from "../../models/user.model";
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, firstValueFrom } from 'rxjs';
+import { User } from '../../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,9 +11,12 @@ export class AuthService {
 
   private apiUrl = environment.apiUrl;
 
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  currentUser$ = this.currentUserSubject.asObservable();
+
   constructor(private http: HttpClient) {}
 
-  loginWithProvider(provider: string): Promise<User> {
+  async loginWithProvider(provider: string): Promise<User> {
     return new Promise((resolve, reject) => {
 
       const width = 500;
@@ -22,16 +25,13 @@ export class AuthService {
       const top = window.innerHeight / 2 - height / 2;
 
       const listener = (event: MessageEvent) => {
-        // 🔐 IMPORTANT: security check
-        if (event.origin !== this.apiUrl) {
-          return;
-        }
+        if (event.origin !== this.apiUrl) return;
 
         const user = event.data as User;
-
         window.removeEventListener('message', listener);
 
         if (user) {
+          this.currentUserSubject.next(user); // Update current user state
           resolve(user);
         } else {
           reject('No user returned');
@@ -46,21 +46,24 @@ export class AuthService {
         `width=${width},height=${height},top=${top},left=${left}`
       );
 
-      if (!popup) {
-        reject('Popup blocked');
-      }
+      if (!popup) reject('Popup blocked');
     });
   }
 
-  getGoogleLoginUrl(): Observable<{ url: string }> {
-    return this.http.get<{ url: string }>(`${this.apiUrl}/api/oauth2/authorize/google`);
-  }
-
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/api/user/me`);
+  getCurrentUser(): Promise<User | null> {
+    return firstValueFrom(this.http.get<User>(`${this.apiUrl}/api/user/me`))
+      .then(user => {
+        this.currentUserSubject.next(user);
+        return user;
+      })
+      .catch(() => {
+        this.currentUserSubject.next(null);
+        return null;
+      });
   }
 
   logout(): Observable<void> {
+    this.currentUserSubject.next(null);
     return this.http.post<void>(`${this.apiUrl}/api/logout`, {});
   }
 }
