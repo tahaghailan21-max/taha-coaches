@@ -4,7 +4,6 @@ import { DarkModeToggleComponent } from "../dark-mode-toggle/dark-mode-toggle.co
 import { LanguageToggleComponent } from "../language-toggle/language-toggle.component";
 import { CommonModule } from "@angular/common";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { HostListener, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'app-navbar',
@@ -53,19 +52,19 @@ import { HostListener, ElementRef } from '@angular/core';
               {{ 'navbar.login' | translate }}
             </button>
 
-            <!-- Preferences Dropdown -->
-            <div class="relative" (clickOutside)="closePreferences()">
+            <!-- Preferences Dropdown (hover) -->
+            <div class="relative group">
+              <!-- Icon Button -->
               <button
-                (click)="togglePreferences()"
                 class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 dark:bg-dark-primary/10 hover:bg-primary/20 dark:hover:bg-dark-primary/20 text-secondary dark:text-dark-secondary transition-colors duration-200"
               >
                 <i class="bi bi-sliders text-sm"></i>
               </button>
 
+              <!-- Dropdown -->
               <div
-                *ngIf="preferencesOpen"
                 class="absolute right-0 mt-2 w-52 rounded-2xl shadow-lg bg-surface dark:bg-dark-surface border border-primary/10 dark:border-dark-primary/10 p-4 z-50
-                       animate-fade-in"
+                       opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200"
               >
                 <p class="text-xs font-semibold uppercase tracking-widest text-secondary/50 dark:text-dark-secondary/50 mb-3">
                   {{ 'navbar.preferences' | translate }}
@@ -94,30 +93,13 @@ import { HostListener, ElementRef } from '@angular/core';
       </div>
     </nav>
   `,
-  styles: [/* your styles here */]
+  styles: [`
+    /* Optional: smooth background/color transitions */
+    nav {
+      transition: background-color 0.3s, color 0.3s;
+    }
+  `]
 })
 export class NavbarComponent {
-  preferencesOpen = false;
-
-  constructor(private translate: TranslateService,   private elementRef: ElementRef
-  ) {}
-
-  togglePreferences() {
-    this.preferencesOpen = !this.preferencesOpen;
-  }
-
-  closePreferences() {
-    this.preferencesOpen = false;
-  }
-
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: MouseEvent) {
-    if (!this.preferencesOpen) return;
-
-    const clickedInside = this.elementRef.nativeElement.contains(event.target);
-
-    if (!clickedInside) {
-      this.closePreferences();
-    }
-  }
+  constructor(private translate: TranslateService) {}
 }
