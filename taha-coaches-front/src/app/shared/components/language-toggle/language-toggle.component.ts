@@ -1,34 +1,35 @@
 import { Component } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import {CommonModule} from "@angular/common";
-import {SharedTranslateModule} from "../../../core/shared-translate.module";
+import { CommonModule } from "@angular/common";
+import {LanguageService} from "../../../core/services/language/language.service";
 
 @Component({
   selector: 'app-language-toggle',
   standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="flex items-center space-x-1">
       <button
         *ngFor="let lang of languages"
         (click)="setLanguage(lang)"
-        [class.font-bold]="translate.currentLang === lang"
+        [class.font-bold]="currentLang === lang"
         class="px-2 py-1 rounded hover:bg-primary/20 dark:hover:bg-dark-primary/20 transition"
       >
         {{ lang.toUpperCase() }}
       </button>
     </div>
-  `,
-  styles: [`
-    button { cursor: pointer; }
-  `],
-  imports: [CommonModule, SharedTranslateModule]
+  `
 })
 export class LanguageToggleComponent {
+
   languages = ['en', 'fr'];
 
-  constructor(public translate: TranslateService) {}
+  constructor(private languageService: LanguageService) {}
+
+  get currentLang() {
+    return this.languageService.getCurrentLang();
+  }
 
   setLanguage(lang: string) {
-    this.translate.use(lang);
+    this.languageService.setLanguage(lang);
   }
 }

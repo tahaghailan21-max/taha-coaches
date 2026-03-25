@@ -1,17 +1,13 @@
 package com.coaching.taha_coaches.controller;
 
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/public/i18n")
@@ -20,16 +16,18 @@ public class I18nController {
 
     private final MessageSource messageSource;
 
-    // Return a map of keys -> translated messages
     @GetMapping("/{lang}")
-    public Map<String, String> getLoginMessages(@PathVariable String lang) {
-        Locale locale = new Locale(lang);
-        return Map.of(
-                "username", messageSource.getMessage("login.username", null, locale),
-                "password", messageSource.getMessage("login.password", null, locale),
-                "submit", messageSource.getMessage("login.submit", null, locale),
-                "error", messageSource.getMessage("login.error", null, locale)
-        );
-    }
+    public Map<String, String> getTranslations(@PathVariable String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
 
+        // Fetch all keys dynamically
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", locale);
+
+        Map<String, String> translations = new HashMap<>();
+        for (String key : bundle.keySet()) {
+            translations.put(key, bundle.getString(key));
+        }
+
+        return translations;
+    }
 }

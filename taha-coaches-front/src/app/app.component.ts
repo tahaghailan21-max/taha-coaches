@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {HomeComponent} from "./shared/components/home/home.component";
 import {NavbarComponent} from "./shared/components/navbar/navbar.component";
 import {FooterComponent} from "./shared/components/footer/footer.component";
+import {LanguageService} from "./core/services/language/language.service";
 
 @Component({
   selector: 'app-root',
@@ -11,6 +12,16 @@ import {FooterComponent} from "./shared/components/footer/footer.component";
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
   title = 'taha-coaches-front';
+
+  constructor(private languageService: LanguageService) {
+
+  }
+
+
+  ngOnInit() {
+    this.languageService.init();
+  }
+
 }

@@ -1,15 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../core/services/auth/auth.service';
-import { TranslateService } from '@ngx-translate/core';
-import { SharedTranslateModule } from '../../../core/shared-translate.module';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
-import { User } from '../../../core/models/user.model';
 import {CommonModule} from "@angular/common";
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [SharedTranslateModule, CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-background dark:bg-dark-background p-6">
 
@@ -73,15 +71,9 @@ export class LoginComponent implements OnInit {
   error = false;
 
   constructor(
-    private authService: AuthService,
-    private translate: TranslateService
-  ) {}
+    private authService: AuthService) {}
 
   ngOnInit() {
-    // Set default language and use browser language if supported
-    this.translate.setDefaultLang('en');
-    const browserLang = this.translate.getBrowserLang();
-    this.translate.use(browserLang?.match(/en|fr/) ? browserLang : 'en');
   }
 
   loginWithGoogle() {
