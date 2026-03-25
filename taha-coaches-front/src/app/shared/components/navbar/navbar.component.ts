@@ -4,11 +4,12 @@ import { DarkModeToggleComponent } from "../dark-mode-toggle/dark-mode-toggle.co
 import { LanguageToggleComponent } from "../language-toggle/language-toggle.component";
 import { CommonModule } from "@angular/common";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import {MiniLoginComponent} from "../../../features/auth/mini-login/mini-login.component";
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule, DarkModeToggleComponent, LanguageToggleComponent, CommonModule, TranslateModule],
+  imports: [RouterModule, DarkModeToggleComponent, LanguageToggleComponent, CommonModule, TranslateModule, MiniLoginComponent],
   template: `
     <nav class="bg-surface dark:bg-dark-surface shadow-md">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,14 +44,23 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <!-- Right-side controls -->
           <div class="flex items-center space-x-3">
 
-            <!-- Login Button -->
-            <button
-              routerLink="/login"
-              class="flex items-center gap-2 px-4 h-8 rounded-full bg-primary dark:bg-dark-primary text-white dark:text-dark-background hover:bg-opacity-90 transition"
-            >
-              <i class="bi bi-person-fill"></i>
-              {{ 'navbar.login' | translate }}
-            </button>
+            <!-- Login Button Hover -->
+            <div class="relative group">
+              <button
+                class="flex items-center gap-2 px-4 h-8 rounded-full bg-primary dark:bg-dark-primary text-white dark:text-dark-background hover:bg-opacity-90 transition"
+              >
+                <i class="bi bi-person-fill"></i>
+                {{ 'navbar.login' | translate }}
+              </button>
+
+              <!-- Mini Login Dropdown -->
+              <div
+                class="absolute right-0 mt-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200"
+              >
+                <app-mini-login></app-mini-login>
+              </div>
+            </div>
+
 
             <!-- Preferences Dropdown (hover) -->
             <div class="relative group">
