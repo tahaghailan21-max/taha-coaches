@@ -1,5 +1,5 @@
-import {Component, OnInit} from '@angular/core';
-import {CommonModule} from "@angular/common";
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from "@angular/common";
 
 @Component({
   selector: 'app-dark-mode-toggle',
@@ -8,32 +8,35 @@ import {CommonModule} from "@angular/common";
   templateUrl: './dark-mode-toggle.component.html',
   styleUrl: './dark-mode-toggle.component.scss'
 })
-export class DarkModeToggleComponent implements OnInit{
+export class DarkModeToggleComponent implements OnInit {
   isDarkMode = false;
+  private isBrowser: boolean;
 
-  constructor() { }
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
-    // Check localStorage or system preference
-    const savedMode = localStorage.getItem('dark-mode');
-    if (savedMode) {
-      this.isDarkMode = savedMode === 'true';
-      this.updateHtmlClass();
-    }
+    if (!this.isBrowser) return;
+
+    this.isDarkMode = document.documentElement.classList.contains('dark');
   }
 
   toggleDarkMode() {
-    this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem('dark-mode', String(this.isDarkMode));
-    this.updateHtmlClass();
-  }
+    if (!this.isBrowser) return;
 
-  updateHtmlClass() {
+    this.isDarkMode = !this.isDarkMode;
+    // ✅ Save user preference
+    localStorage.setItem('dark-mode', String(this.isDarkMode));
+
+    // ✅ Apply immediately
     const html = document.documentElement;
+
     if (this.isDarkMode) {
       html.classList.add('dark');
     } else {
       html.classList.remove('dark');
     }
   }
+
 }

@@ -4,6 +4,7 @@ import { DarkModeToggleComponent } from "../dark-mode-toggle/dark-mode-toggle.co
 import { LanguageToggleComponent } from "../language-toggle/language-toggle.component";
 import { CommonModule } from "@angular/common";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { HostListener, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'app-navbar',
@@ -98,7 +99,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 export class NavbarComponent {
   preferencesOpen = false;
 
-  constructor(private translate: TranslateService) {}
+  constructor(private translate: TranslateService,   private elementRef: ElementRef
+  ) {}
 
   togglePreferences() {
     this.preferencesOpen = !this.preferencesOpen;
@@ -106,5 +108,16 @@ export class NavbarComponent {
 
   closePreferences() {
     this.preferencesOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent) {
+    if (!this.preferencesOpen) return;
+
+    const clickedInside = this.elementRef.nativeElement.contains(event.target);
+
+    if (!clickedInside) {
+      this.closePreferences();
+    }
   }
 }

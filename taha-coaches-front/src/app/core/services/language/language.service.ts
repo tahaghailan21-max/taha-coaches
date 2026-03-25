@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { isPlatformBrowser } from '@angular/common';
 
 const SUPPORTED_LANGS = ['en', 'fr'];
 const STORAGE_KEY = 'app_lang';
@@ -9,41 +10,46 @@ const STORAGE_KEY = 'app_lang';
 })
 export class LanguageService {
 
-  constructor(private translate: TranslateService) {}
+  private isBrowser: boolean;
+
+  constructor(
+    private translate: TranslateService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   init() {
-    console.log('🌍 LanguageService init');
-
     this.translate.setDefaultLang('en');
 
-    // 1. Check localStorage first
-    const savedLang = localStorage.getItem(STORAGE_KEY);
+    let lang = 'en';
 
-    // 2. Otherwise use browser language
-    const browserLang = this.translate.getBrowserLang();
+    if (this.isBrowser) {
+      // 1. Check localStorage
+      const savedLang = localStorage.getItem(STORAGE_KEY);
 
-    const lang = savedLang && SUPPORTED_LANGS.includes(savedLang)
-      ? savedLang
-      : (browserLang && SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
+      // 2. Browser language
+      const browserLang = this.translate.getBrowserLang();
 
-    console.log('🌍 Initial language:', lang);
+      lang = savedLang && SUPPORTED_LANGS.includes(savedLang)
+        ? savedLang
+        : (browserLang && SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
+    }
 
     this.translate.use(lang);
   }
 
   setLanguage(lang: string) {
     if (!SUPPORTED_LANGS.includes(lang)) {
-      console.warn('❌ Unsupported language:', lang);
       return;
     }
 
-    console.log('🔁 Switching language to:', lang);
-
-    localStorage.setItem(STORAGE_KEY, lang);
+    if (this.isBrowser) {
+      localStorage.setItem(STORAGE_KEY, lang);
+    }
 
     this.translate.use(lang).subscribe({
-      next: () => console.log('✅ Language switched to', lang),
-      error: (err) => console.error('❌ Language load failed', err)
+      error: () => {}
     });
   }
 
