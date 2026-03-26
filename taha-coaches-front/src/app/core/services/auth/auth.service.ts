@@ -51,9 +51,13 @@ export class AuthService {
   }
 
   getCurrentUser(): Promise<User | null> {
-    return firstValueFrom(this.http.get<User>(`${this.apiUrl}/api/user/me`))
+    return firstValueFrom(
+      this.http.get<User>(`${this.apiUrl}/api/user/me`, {
+        withCredentials: true
+      })
+    )
       .then(user => {
-        this.currentUserSubject.next(user);
+        this.currentUserSubject.next(user); // ✅ THIS IS THE KEY
         return user;
       })
       .catch(() => {
@@ -64,6 +68,13 @@ export class AuthService {
 
   logout(): Observable<void> {
     this.currentUserSubject.next(null);
-    return this.http.post<void>(`${this.apiUrl}/api/logout`, {});
+    return this.http.post<void>(
+      `${this.apiUrl}/api/logout`,
+      {},
+      { withCredentials: true } // ⭐ VERY IMPORTANT
+    );
   }
+
+
+
 }

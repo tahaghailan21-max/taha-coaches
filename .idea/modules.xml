@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/taha-coaches.iml" filepath="$PROJECT_DIR$/.idea/taha-coaches.iml" />
+      <module fileurl="file://$PROJECT_DIR$/taha-coaches/taha-coaches.iml" filepath="$PROJECT_DIR$/taha-coaches/taha-coaches.iml" />
     </modules>
   </component>
 </project>

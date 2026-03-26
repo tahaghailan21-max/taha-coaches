@@ -2,6 +2,8 @@ package com.coaching.taha_coaches.controller;
 
 import com.coaching.taha_coaches.domain.user.User;
 import com.coaching.taha_coaches.domain.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -16,27 +18,15 @@ public class AuthController {
 
     private final UserService userService;
 
-    @GetMapping("/user/me")
-    public User getCurrentUser(@AuthenticationPrincipal OAuth2User principal) {
-        if (principal == null) return null;
-
-        String email = principal.getAttribute("email");
-        String name = principal.getAttribute("name");
-        String providerId = principal.getAttribute("sub");
-
-        return userService.getUserByEmail(email)
-                .orElseGet(() -> userService.saveUser(
-                        User.builder()
-                                .email(email)
-                                .name(name)
-                                .provider("google")
-                                .providerId(providerId)
-                                .build()
-                ));
-    }
 
     @PostMapping("/logout")
-    public void logout() {
-        // Spring Security handles logout automatically
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            request.logout(); // clears authentication
+            request.getSession().invalidate(); // invalidate session
+        } catch (Exception e) {
+            throw new RuntimeException("Logout failed", e);
+        }
     }
+
 }
