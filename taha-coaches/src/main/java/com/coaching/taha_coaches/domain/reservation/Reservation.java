@@ -1,4 +1,4 @@
-package com.coaching.taha_coaches.domain.booking;
+package com.coaching.taha_coaches.domain.reservation;
 
 import com.coaching.taha_coaches.domain.user.User;
 import jakarta.persistence.*;
@@ -10,22 +10,18 @@ import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "bookings",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"date", "time"})
-        })
+@Table(name = "reservations")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Booking {
+public class Reservation {
 
     @Id
     @GeneratedValue
     private UUID id;
 
-    // 🔗 Many bookings → One user
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private User user;
@@ -36,9 +32,12 @@ public class Booking {
     @Column(nullable = false)
     private LocalTime time;
 
+    @Column(nullable = false)
+    private int durationMinutes; // 60 ou 90
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private BookingStatus status = BookingStatus.PENDING;
+    private ReservationStatus status = ReservationStatus.PENDING;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
@@ -50,5 +49,12 @@ public class Booking {
     public void prePersist() {
         this.createdAt = Instant.now();
     }
+
+
+
+    public LocalTime getEndTime() {
+        return this.time.plusMinutes(this.durationMinutes);
+    }
+
 
 }

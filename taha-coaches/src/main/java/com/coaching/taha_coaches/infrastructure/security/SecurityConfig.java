@@ -1,5 +1,6 @@
 package com.coaching.taha_coaches.infrastructure.security;
 
+import com.coaching.taha_coaches.infrastructure.auth.CustomOAuth2UserService;
 import com.coaching.taha_coaches.infrastructure.auth.CustomOidcUserService;
 import com.coaching.taha_coaches.infrastructure.auth.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ SecurityConfig {
 
     private final CustomOidcUserService customOidcUserService;
     private final OAuth2LoginSuccessHandler successHandler;
-
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,13 +33,18 @@ SecurityConfig {
 //                                auth.requestMatchers("/**").permitAll()
 //                                .requestMatchers("/api/oauth2/**", "/api/public/**").permitAll()
 //                                .anyRequest().authenticated()
-                                auth.requestMatchers("/api/public/**", "/login/**", "/oauth2/**", "/api/test-r2/**").permitAll()
+                                auth.requestMatchers("/api/public/**", "/login/**", "/oauth2/**").permitAll()
                                 .anyRequest().authenticated()
 
 
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(customOidcUserService))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .oidcUserService(customOidcUserService) // for OIDC (Google)
+                        )
+                        .userInfoEndpoint(oauth2UserEndpoint -> oauth2UserEndpoint
+                                .userService(customOAuth2UserService) // for non-OIDC (Facebook, GitHub, etc.)
+                        )
                         .successHandler(successHandler)
                 )
                 .logout(logout -> logout

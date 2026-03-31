@@ -81,20 +81,11 @@ public class CustomOidcUserService extends OidcUserService {
                     return userRepository.save(newUser);
                 });
 
-        // Wrap in DefaultOidcUser, attach user for frontend
-        Map<String, Object> attributes = new HashMap<>(oidcUser.getAttributes());
-        attributes.put("user", user);
 
-        return new DefaultOidcUser(
-                oidcUser.getAuthorities(),
-                oidcUser.getIdToken(),
-                oidcUser.getUserInfo(),
-                "email"
-        ) {
-            @Override
-            public Map<String, Object> getAttributes() {
-                return attributes;
-            }
-        };
+        return new AuthenticatedUser(
+                user,
+                oidcUser.getAttributes(),
+                oidcUser.getAuthorities()
+        );
     }
 }

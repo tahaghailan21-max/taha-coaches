@@ -27,8 +27,10 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
 
-        OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
-        User user = (User) oidcUser.getAttribute("user");
+        AuthenticatedUser principal =
+                (AuthenticatedUser) authentication.getPrincipal();
+
+        User user = principal.getUser();
 
         String userJson = objectMapper.writeValueAsString(user);
 
