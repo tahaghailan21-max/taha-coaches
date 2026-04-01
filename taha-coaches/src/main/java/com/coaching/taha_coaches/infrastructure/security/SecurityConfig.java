@@ -3,11 +3,13 @@ package com.coaching.taha_coaches.infrastructure.security;
 import com.coaching.taha_coaches.infrastructure.auth.CustomOAuth2UserService;
 import com.coaching.taha_coaches.infrastructure.auth.CustomOidcUserService;
 import com.coaching.taha_coaches.infrastructure.auth.OAuth2LoginSuccessHandler;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,13 +32,17 @@ SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(
                         auth ->
-//                                auth.requestMatchers("/**").permitAll()
-//                                .requestMatchers("/api/oauth2/**", "/api/public/**").permitAll()
-//                                .anyRequest().authenticated()
                                 auth.requestMatchers("/api/public/**", "/login/**", "/oauth2/**").permitAll()
                                 .anyRequest().authenticated()
 
 
+                )
+                .exceptionHandling(ex -> ex
+                        .defaultAuthenticationEntryPointFor(
+                                (request, response, authException) ->
+                                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"),
+                                request -> request.getRequestURI().startsWith("/api/")
+                        )
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
@@ -61,7 +67,7 @@ SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // IMPORTANT for cookies / auth
 

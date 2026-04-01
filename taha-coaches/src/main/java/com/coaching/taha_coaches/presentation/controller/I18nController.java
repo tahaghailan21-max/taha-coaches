@@ -1,4 +1,4 @@
-package com.coaching.taha_coaches.controller;
+package com.coaching.taha_coaches.presentation.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;

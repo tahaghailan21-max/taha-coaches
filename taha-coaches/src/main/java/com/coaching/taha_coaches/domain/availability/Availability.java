@@ -1,5 +1,6 @@
 package com.coaching.taha_coaches.domain.availability;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,6 +32,7 @@ public class Availability {
     private LocalTime endTime;
 
     @Column(name = "is_active")
+    @JsonProperty("isActive")          // ← add this
     private boolean isActive = true;
 
     @Column(name = "created_at", updatable = false)

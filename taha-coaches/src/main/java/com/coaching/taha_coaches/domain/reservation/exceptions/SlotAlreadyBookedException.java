@@ -1,4 +1,4 @@
-package com.coaching.taha_coaches.domain.reservation;
+package com.coaching.taha_coaches.domain.reservation.exceptions;
 
 public class SlotAlreadyBookedException extends RuntimeException {
     public SlotAlreadyBookedException() {

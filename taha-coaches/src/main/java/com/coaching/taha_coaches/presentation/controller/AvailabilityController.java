@@ -1,4 +1,4 @@
-package com.coaching.taha_coaches.controller;
+package com.coaching.taha_coaches.presentation.controller;
 
 import com.coaching.taha_coaches.domain.availability.Availability;
 import com.coaching.taha_coaches.domain.availability.AvailabilityService;
@@ -19,6 +19,30 @@ import java.util.UUID;
 public class AvailabilityController {
 
     private final AvailabilityService availabilityService;
+
+    /**
+     * GET /api/availabilities/range?start=YYYY-MM-DD&end=YYYY-MM-DD
+     * Used by the weekly view when the week spans two calendar months.
+     */
+    @GetMapping("/range")
+    public ResponseEntity<List<Availability>> getForRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end
+    ) {
+        return ResponseEntity.ok(availabilityService.getForRange(start, end));
+    }
+
+    /**
+     * GET /api/availabilities/month?year=2026&month=3
+     * Returns all windows for an entire month (admin use).
+     */
+    @GetMapping("/month")
+    public ResponseEntity<List<Availability>> getForMonth(
+            @RequestParam int year,
+            @RequestParam int month
+    ) {
+        return ResponseEntity.ok(availabilityService.getForMonth(year, month));
+    }
 
     /**
      * GET /api/availabilities?date=YYYY-MM-DD

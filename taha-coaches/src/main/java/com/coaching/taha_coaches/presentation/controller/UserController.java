@@ -1,4 +1,4 @@
-package com.coaching.taha_coaches.controller;
+package com.coaching.taha_coaches.presentation.controller;
 
 import com.coaching.taha_coaches.domain.user.User;
 import com.coaching.taha_coaches.domain.user.UserRepository;

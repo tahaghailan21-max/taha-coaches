@@ -13,4 +13,7 @@ public interface AvailabilityRepository extends JpaRepository<Availability, UUID
 
     /** Only active windows for a date (used by booking validation & slot generation). */
     List<Availability> findByDateAndIsActiveTrue(LocalDate date);
+
+    // AvailabilityRepository.java
+    List<Availability> findByDateBetweenOrderByDateAscStartTimeAsc(LocalDate start, LocalDate end);
 }

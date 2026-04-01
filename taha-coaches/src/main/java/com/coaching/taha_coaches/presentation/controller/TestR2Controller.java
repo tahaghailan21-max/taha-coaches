@@ -1,4 +1,4 @@
-package com.coaching.taha_coaches.controller;
+package com.coaching.taha_coaches.presentation.controller;
 
 import com.coaching.taha_coaches.infrastructure.cloud.CloudflareR2Service;
 import lombok.RequiredArgsConstructor;

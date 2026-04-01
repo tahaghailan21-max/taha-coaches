@@ -1,10 +1,10 @@
 package com.coaching.taha_coaches.infrastructure.exception;
 
-import com.coaching.taha_coaches.domain.reservation.ReservationNotCancellableException;
-import com.coaching.taha_coaches.domain.reservation.ReservationNotFoundException;
-import com.coaching.taha_coaches.domain.reservation.SlotAlreadyBookedException;
-import com.coaching.taha_coaches.domain.reservation.SlotNotAvailableException;
-import lombok.RequiredArgsConstructor;
+import com.coaching.taha_coaches.domain.availability.exceptions.AvailabilityOverlapException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotCancellableException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotFoundException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.SlotAlreadyBookedException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.SlotNotAvailableException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
@@ -64,6 +64,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ReservationNotCancellableException.class)
     public ResponseEntity<Map<String, String>> handleNotCancellable(ReservationNotCancellableException ex) {
+        return error(HttpStatus.CONFLICT, ex);
+    }
+
+    @ExceptionHandler(AvailabilityOverlapException.class)
+    public ResponseEntity<Map<String, String>> handleAvailabilityOverlap(AvailabilityOverlapException ex) {
         return error(HttpStatus.CONFLICT, ex);
     }
 }

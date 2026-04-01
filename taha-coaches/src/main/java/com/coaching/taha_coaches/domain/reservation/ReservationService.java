@@ -2,6 +2,10 @@ package com.coaching.taha_coaches.domain.reservation;
 
 import com.coaching.taha_coaches.domain.availability.Availability;
 import com.coaching.taha_coaches.domain.availability.AvailabilityRepository;
+import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotCancellableException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotFoundException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.SlotAlreadyBookedException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.SlotNotAvailableException;
 import com.coaching.taha_coaches.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

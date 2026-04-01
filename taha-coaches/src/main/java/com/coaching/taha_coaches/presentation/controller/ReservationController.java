@@ -1,7 +1,8 @@
-package com.coaching.taha_coaches.controller;
+package com.coaching.taha_coaches.presentation.controller;
 
 import com.coaching.taha_coaches.domain.reservation.*;
 import com.coaching.taha_coaches.domain.user.User;
+import com.coaching.taha_coaches.infrastructure.auth.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +28,12 @@ public class ReservationController {
      */
     @PostMapping
     public ResponseEntity<ReservationDto> create(
-            @AuthenticationPrincipal DefaultOidcUser oidcUser,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @RequestBody CreateReservationRequest request
     ) {
-        if (oidcUser == null) {
-            return ResponseEntity.status(401).build();
-        }
-        User user = (User) oidcUser.getAttribute("user");
+        if (principal == null) return ResponseEntity.status(401).build();
+
+        User user = principal.getUser();
         Reservation reservation = reservationService.createReservation(
                 user,
                 request.date(),
@@ -80,11 +80,11 @@ public class ReservationController {
      */
     @GetMapping("/my")
     public ResponseEntity<List<ReservationDto>> getMyReservations(
-            @AuthenticationPrincipal DefaultOidcUser oidcUser
+            @AuthenticationPrincipal AuthenticatedUser principal
     ) {
-        if (oidcUser == null) return ResponseEntity.status(401).build();
+        if (principal == null) return ResponseEntity.status(401).build();
 
-        User user = (User) oidcUser.getAttribute("user");
+        User user = principal.getUser();
         List<Reservation> reservations = reservationService.getMyReservations(user);
         List<ReservationDto> dtos = reservations.stream()
                 .map(ReservationMapper::toDto)
@@ -99,9 +99,12 @@ public class ReservationController {
      */
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @PathVariable java.util.UUID id
     ) {
+        if (principal == null) return ResponseEntity.status(401).build();
+
+        User user = principal.getUser();
         reservationService.cancelReservation(user, id);
         return ResponseEntity.noContent().build();
     }
