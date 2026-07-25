@@ -1,10 +1,12 @@
 package com.coaching.taha_coaches.infrastructure.exception;
 
+import com.coaching.taha_coaches.domain.availability.exceptions.AvailabilityHasReservationsException;
 import com.coaching.taha_coaches.domain.availability.exceptions.AvailabilityOverlapException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotApprovableException;
 import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotCancellableException;
 import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotFoundException;
-import com.coaching.taha_coaches.domain.reservation.exceptions.SlotAlreadyBookedException;
-import com.coaching.taha_coaches.domain.reservation.exceptions.SlotNotAvailableException;
+import com.coaching.taha_coaches.domain.reservation.exceptions.TimeNotAvailableException;
+import com.coaching.taha_coaches.domain.sessiontype.exceptions.SessionTypeNotFoundException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
@@ -23,38 +25,19 @@ public class GlobalExceptionHandler {
         this.messageSource = messageSource;
     }
 
-    /**
-     * Resolves a message key using the request's locale (Accept-Language header).
-     * Returns the key itself as fallback if the key is not found.
-     */
     private String resolve(String key) {
         return messageSource.getMessage(key, null, key, LocaleContextHolder.getLocale());
     }
 
-    /**
-     * Shared helper — builds the standard error response body.
-     * The frontend receives both:
-     *   - "messageKey": the i18n key, so the frontend can look it up itself
-     *   - "message":    the already-resolved string, ready to display directly
-     */
     private ResponseEntity<Map<String, String>> error(HttpStatus status, RuntimeException ex) {
-        String key = ex.getMessage(); // our exceptions store the key as the message
+        String key = ex.getMessage();
         return ResponseEntity.status(status)
-                .body(Map.of("messageKey", key, "message", resolve(key)));
+            .body(Map.of("messageKey", key, "message", resolve(key)));
     }
 
-    @ExceptionHandler(SlotNotAvailableException.class)
-    public ResponseEntity<Map<String, String>> handleSlotNotAvailable(SlotNotAvailableException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(Map.of("messageKey", ex.getMessage(), "message", resolve(ex.getMessage())));
-    }
-
-    @ExceptionHandler(SlotAlreadyBookedException.class)
-    public ResponseEntity<Map<String, String>> handleSlotAlreadyBooked(SlotAlreadyBookedException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(Map.of("messageKey", ex.getMessage(), "message", resolve(ex.getMessage())));
+    @ExceptionHandler(TimeNotAvailableException.class)
+    public ResponseEntity<Map<String, String>> handleTimeNotAvailable(TimeNotAvailableException ex) {
+        return error(HttpStatus.CONFLICT, ex);
     }
 
     @ExceptionHandler(ReservationNotFoundException.class)
@@ -67,8 +50,23 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.CONFLICT, ex);
     }
 
+    @ExceptionHandler(ReservationNotApprovableException.class)
+    public ResponseEntity<Map<String, String>> handleNotApprovable(ReservationNotApprovableException ex) {
+        return error(HttpStatus.CONFLICT, ex);
+    }
+
     @ExceptionHandler(AvailabilityOverlapException.class)
     public ResponseEntity<Map<String, String>> handleAvailabilityOverlap(AvailabilityOverlapException ex) {
         return error(HttpStatus.CONFLICT, ex);
+    }
+
+    @ExceptionHandler(AvailabilityHasReservationsException.class)
+    public ResponseEntity<Map<String, String>> handleAvailabilityHasReservations(AvailabilityHasReservationsException ex) {
+        return error(HttpStatus.CONFLICT, ex);
+    }
+
+    @ExceptionHandler(SessionTypeNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleSessionTypeNotFound(SessionTypeNotFoundException ex) {
+        return error(HttpStatus.NOT_FOUND, ex);
     }
 }

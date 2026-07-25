@@ -5,8 +5,10 @@ import com.coaching.taha_coaches.infrastructure.auth.CustomOidcUserService;
 import com.coaching.taha_coaches.infrastructure.auth.OAuth2LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -18,12 +20,16 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-public class
-SecurityConfig {
+@EnableMethodSecurity
+public class SecurityConfig {
 
     private final CustomOidcUserService customOidcUserService;
     private final OAuth2LoginSuccessHandler successHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
+
+    // Frontend origin allowed for CORS (localhost in dev, the Vercel URL in prod via FRONTEND_URL).
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -66,7 +72,7 @@ SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuration.setAllowedOrigins(List.of(frontendUrl));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // IMPORTANT for cookies / auth

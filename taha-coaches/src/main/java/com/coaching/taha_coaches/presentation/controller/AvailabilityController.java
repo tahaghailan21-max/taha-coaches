@@ -7,6 +7,7 @@ import com.coaching.taha_coaches.domain.availability.ToggleAvailabilityRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/availabilities")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AvailabilityController {
 

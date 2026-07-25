@@ -39,6 +39,11 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl; // Can store the R2 object key or full URL
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Role role = Role.CLIENT;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = Instant.now();

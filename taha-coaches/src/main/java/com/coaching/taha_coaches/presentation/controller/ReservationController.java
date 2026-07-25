@@ -1,19 +1,19 @@
 package com.coaching.taha_coaches.presentation.controller;
 
-import com.coaching.taha_coaches.domain.reservation.*;
-import com.coaching.taha_coaches.domain.user.User;
+import com.coaching.taha_coaches.domain.reservation.CreateReservationRequest;
+import com.coaching.taha_coaches.domain.reservation.Reservation;
+import com.coaching.taha_coaches.domain.reservation.ReservationService;
 import com.coaching.taha_coaches.infrastructure.auth.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
-
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -22,92 +22,76 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
-    /**
-     * POST /api/reservations
-     * Creates a new reservation for the authenticated user.
-     */
     @PostMapping
-    public ResponseEntity<ReservationDto> create(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @RequestBody CreateReservationRequest request
+    public ResponseEntity<Reservation> create(
+        @RequestBody CreateReservationRequest request,
+        @AuthenticationPrincipal AuthenticatedUser principal
     ) {
-        if (principal == null) return ResponseEntity.status(401).build();
-
-        User user = principal.getUser();
-        Reservation reservation = reservationService.createReservation(
-                user,
-                request.date(),
-                request.time(),
-                request.durationMinutes(),
-                request.notes()
-        );
-
-        return ResponseEntity.ok(ReservationMapper.toDto(reservation));
+        return ResponseEntity.ok(reservationService.create(request, principal.getUser()));
     }
 
-    /**
-     * GET /api/reservations/available-slots?date=YYYY-MM-DD&duration=60
-     * Returns available start times for a given date and duration.
-     * Used by the booking page to render the time grid.
-     */
-    @GetMapping("/available-slots")
-    public ResponseEntity<List<LocalTime>> getAvailableSlots(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam int duration
+    @GetMapping("/me")
+    public ResponseEntity<List<Reservation>> getMyReservations(
+        @AuthenticationPrincipal AuthenticatedUser principal
     ) {
-        return ResponseEntity.ok(reservationService.getAvailableSlots(date, duration));
+        return ResponseEntity.ok(reservationService.getForUser(principal.getUser().getId()));
     }
 
-    /**
-     * GET /api/reservations/day?date=YYYY-MM-DD
-     * Returns all active (PENDING or APPROVED) reservations for a given date.
-     * Used by the admin or booking page to show booked slots.
-     */
-    @GetMapping("/day")
-    public ResponseEntity<List<ReservationDto>> getForDay(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
-        List<Reservation> reservations = reservationService.getReservationsForDay(date);
-        List<ReservationDto> dtos = reservations.stream()
-                .map(ReservationMapper::toDto)
-                .toList();
-        return ResponseEntity.ok(dtos);
-    }
-
-    /**
-     * GET /api/reservations/my
-     * Returns all reservations belonging to the authenticated user.
-     */
-    @GetMapping("/my")
-    public ResponseEntity<List<ReservationDto>> getMyReservations(
-            @AuthenticationPrincipal AuthenticatedUser principal
-    ) {
-        if (principal == null) return ResponseEntity.status(401).build();
-
-        User user = principal.getUser();
-        List<Reservation> reservations = reservationService.getMyReservations(user);
-        List<ReservationDto> dtos = reservations.stream()
-                .map(ReservationMapper::toDto)
-                .toList();
-        return ResponseEntity.ok(dtos);
-    }
-
-
-    /**
-     * PATCH /api/reservations/{id}/cancel
-     * Cancels a PENDING reservation. Only the owner can cancel their own reservation.
-     */
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancel(
-            @AuthenticationPrincipal AuthenticatedUser principal,
-            @PathVariable java.util.UUID id
+    public ResponseEntity<Reservation> cancelOwner(
+        @PathVariable UUID id,
+        @AuthenticationPrincipal AuthenticatedUser principal
     ) {
-        if (principal == null) return ResponseEntity.status(401).build();
-
-        User user = principal.getUser();
-        reservationService.cancelReservation(user, id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(reservationService.cancelOwner(id, principal.getUser()));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/cancel/admin")
+    public ResponseEntity<Reservation> cancelAdmin(@PathVariable UUID id) {
+        return ResponseEntity.ok(reservationService.cancelAdmin(id));
+    }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<Reservation> approve(@PathVariable UUID id) {
+        return ResponseEntity.ok(reservationService.approve(id));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/decline")
+    public ResponseEntity<Reservation> decline(@PathVariable UUID id) {
+        return ResponseEntity.ok(reservationService.decline(id));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<Reservation> complete(@PathVariable UUID id) {
+        return ResponseEntity.ok(reservationService.complete(id));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/pending")
+    public ResponseEntity<List<Reservation>> getPending() {
+        return ResponseEntity.ok(reservationService.getPending());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<Reservation>> getAll() {
+        return ResponseEntity.ok(reservationService.getAll());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/date")
+    public ResponseEntity<List<Reservation>> getForDate(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return ResponseEntity.ok(reservationService.getForDate(date));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Reservation>> getForUser(@PathVariable UUID userId) {
+        return ResponseEntity.ok(reservationService.getForUser(userId));
+    }
 }

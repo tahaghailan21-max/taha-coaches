@@ -1,18 +1,19 @@
 package com.coaching.taha_coaches.domain.reservation;
 
-import com.coaching.taha_coaches.domain.availability.Availability;
 import com.coaching.taha_coaches.domain.availability.AvailabilityRepository;
-import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotCancellableException;
-import com.coaching.taha_coaches.domain.reservation.exceptions.ReservationNotFoundException;
-import com.coaching.taha_coaches.domain.reservation.exceptions.SlotAlreadyBookedException;
-import com.coaching.taha_coaches.domain.reservation.exceptions.SlotNotAvailableException;
+import com.coaching.taha_coaches.domain.booking.BookingTimeService;
+import com.coaching.taha_coaches.domain.reservation.exceptions.*;
+import com.coaching.taha_coaches.domain.sessiontype.SessionType;
+import com.coaching.taha_coaches.domain.sessiontype.SessionTypeService;
 import com.coaching.taha_coaches.domain.user.User;
+import com.coaching.taha_coaches.infrastructure.config.BookingProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,157 +21,117 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReservationService {
 
-    private final ReservationRepository reservationRepository;
+    private final ReservationRepository  reservationRepository;
     private final AvailabilityRepository availabilityRepository;
+    private final SessionTypeService     sessionTypeService;
+    private final BookingTimeService     bookingTimeService;
+    private final BookingProperties      config;
 
-    /**
-     * Creates a reservation for the given user if the slot is valid and free.
-     *
-     * Flow:
-     * 1. Compute endTime from startTime + durationMinutes.
-     * 2. Check that the [startTime, endTime] window falls entirely within an
-     * active availability window for that date. If not → SlotNotAvailableException.
-     * 3. Check at DB level (atomic) that no PENDING/APPROVED reservation overlaps
-     * the window. If so → SlotAlreadyBookedException.
-     * 4. Persist and return the new PENDING reservation.
-     *
-     * @param user            the authenticated user making the booking
-     * @param date            the date of the session
-     * @param time            the desired start time
-     * @param durationMinutes 60 or 90 (1h or 1h30)
-     * @param notes           optional notes from the user
-     */
-    public Reservation createReservation(
-            User user,
-            LocalDate date,
-            LocalTime time,
-            int durationMinutes,
-            String notes) {
-        LocalTime endTime = time.plusMinutes(durationMinutes);
-
-        // 1️⃣ Validate: the slot must fall inside an active availability window.
-        // Both start and end must be within the same availability block — we
-        // do NOT allow a session to straddle two separate blocks.
-        boolean slotValid = availabilityRepository.findByDateAndIsActiveTrue(date).stream()
-                .anyMatch(a -> !time.isBefore(a.getStartTime()) && // start >= availability.start
-                        !endTime.isAfter(a.getEndTime()) // end <= availability.end
-                );
-
-        if (!slotValid) {
-            throw new SlotNotAvailableException();
+    @Transactional
+    public Reservation create(CreateReservationRequest req, User user) {
+        LocalDate today = LocalDate.now();
+        if (req.date().isBefore(today) || req.date().isAfter(today.plusDays(config.horizonDays()))) {
+            throw new TimeNotAvailableException();
         }
 
-        // 2️⃣ Validate: no existing PENDING or APPROVED reservation overlaps.
-        // This check is done at DB level to be safe against concurrent requests.
-        // (An in-memory check on the same data would have a race-condition window.)
-        if (reservationRepository.existsOverlapping(date, time, endTime)) {
-            throw new SlotAlreadyBookedException();
+        SessionType sessionType = sessionTypeService.getById(req.sessionTypeId());
+        LocalTime   endTime     = req.startTime().plusMinutes(sessionType.getDurationMinutes());
+
+        if (!req.date().atTime(req.startTime()).isAfter(LocalDateTime.now().plusHours(config.minNoticeHours()))) {
+            throw new TimeNotAvailableException();
         }
 
-        // 3️⃣ Persist the reservation with PENDING status.
-        // It will be APPROVED or REJECTED by the coach afterward.
-        Reservation reservation = Reservation.builder()
-                .user(user)
-                .date(date)
-                .time(time)
-                .durationMinutes(durationMinutes)
-                .status(ReservationStatus.PENDING)
-                .notes(notes)
-                .build();
+        // Lock availabilities for this date to serialize concurrent bookings on the same day
+        availabilityRepository.findByDateWithLock(req.date());
 
-        return reservationRepository.save(reservation);
-    }
-
-    /**
-     * Returns all active (PENDING or APPROVED) reservations for a given date.
-     * Used by the frontend to grey out already-booked time slots.
-     */
-    public List<Reservation> getReservationsForDay(LocalDate date) {
-        return reservationRepository.findByDate(date).stream()
-                .filter(r -> r.getStatus() == ReservationStatus.PENDING ||
-                        r.getStatus() == ReservationStatus.APPROVED)
-                .toList();
-    }
-
-    /**
-     * Returns all start times the user could pick for a given date and duration.
-     *
-     * Flow:
-     * - For each active availability window, generate candidate slots every 30 min.
-     * - Discard any candidate whose [start, start+duration] window overlaps an
-     * existing active reservation.
-     * - Return the remaining candidates in chronological order.
-     *
-     * @param date                   the date to query
-     * @param desiredDurationMinutes 60 or 90
-     */
-    public List<LocalTime> getAvailableSlots(LocalDate date, int desiredDurationMinutes) {
-        List<Availability> availabilities = availabilityRepository.findByDateAndIsActiveTrue(date);
-        List<Reservation> bookedSlots = getReservationsForDay(date);
-        List<LocalTime> availableSlots = new ArrayList<>();
-
-        for (Availability a : availabilities) {
-            LocalTime current = a.getStartTime();
-            // Last valid start: there must be enough room for the full duration
-            LocalTime lastPossibleStart = a.getEndTime().minusMinutes(desiredDurationMinutes);
-
-            while (!current.isAfter(lastPossibleStart)) {
-                final LocalTime slotStart = current;
-                final LocalTime slotEnd = current.plusMinutes(desiredDurationMinutes);
-
-                boolean overlaps = bookedSlots.stream().anyMatch(r -> {
-                    LocalTime rEnd = r.getTime().plusMinutes(r.getDurationMinutes());
-                    // Standard interval overlap: A starts before B ends AND A ends after B starts
-                    return slotStart.isBefore(rEnd) && slotEnd.isAfter(r.getTime());
-                });
-
-                if (!overlaps) {
-                    availableSlots.add(slotStart);
-                }
-
-                current = current.plusMinutes(30); // slots offered every 30 minutes
-            }
+        if (!bookingTimeService.isTimeAvailable(req.date(), req.startTime(), sessionType)) {
+            throw new TimeNotAvailableException();
         }
 
-        return availableSlots;
+        return reservationRepository.save(Reservation.builder()
+            .user(user)
+            .sessionType(sessionType)
+            .date(req.date())
+            .startTime(req.startTime())
+            .endTime(endTime)
+            .notes(req.notes())
+            .status(ReservationStatus.PENDING)
+            .build());
     }
 
-    /**
-     * Returns all reservations for the authenticated user, most recent first.
-     * The user is resolved from the JWT by Spring Security — the controller
-     * passes it in directly.
-     */
-    public List<Reservation> getMyReservations(User user) {
-        return reservationRepository.findByUserOrderByDateDescTimeDesc(user);
+    @Transactional
+    public Reservation approve(UUID id) {
+        Reservation r = find(id);
+        if (r.getStatus() != ReservationStatus.PENDING) throw new ReservationNotApprovableException();
+        r.setStatus(ReservationStatus.APPROVED);
+        return reservationRepository.save(r);
     }
 
-    /**
-     * Cancels a PENDING reservation belonging to the authenticated user.
-     *
-     * Flow:
-     *  1. Load the reservation — 404 if not found.
-     *  2. Verify ownership — return 404 (not 403) to avoid leaking existence.
-     *  3. Verify it is still PENDING — only pending reservations can be cancelled.
-     *  4. Set status to CANCELLED and persist.
-     */
-    public void cancelReservation(User user, UUID id) {
-        Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(ReservationNotFoundException::new);
+    @Transactional
+    public Reservation decline(UUID id) {
+        Reservation r = find(id);
+        if (r.getStatus() != ReservationStatus.PENDING) throw new ReservationNotDeclinableException();
+        r.setStatus(ReservationStatus.DECLINED);
+        return reservationRepository.save(r);
+    }
 
-        if (!reservation.getUser().getId().equals(user.getId())) {
-            throw new ReservationNotFoundException(); // intentional — don't leak existence
-        }
+    @Transactional
+    public Reservation cancelOwner(UUID id, User user) {
+        Reservation r = reservationRepository.findById(id)
+            .filter(res -> user.getId().equals(res.getUserId()))
+            .orElseThrow(ReservationNotFoundException::new);
 
-        if (reservation.getStatus() != ReservationStatus.PENDING) {
+        if (isTerminal(r.getStatus())) throw new ReservationNotCancellableException();
+
+        LocalDateTime cutoff = r.getDate().atTime(r.getStartTime()).minusHours(config.cancelCutoffHours());
+        if (LocalDateTime.now().isAfter(cutoff)) throw new ReservationNotCancellableException();
+
+        r.setStatus(ReservationStatus.CANCELLED);
+        return reservationRepository.save(r);
+    }
+
+    @Transactional
+    public Reservation cancelAdmin(UUID id) {
+        Reservation r = find(id);
+        if (r.getStatus() == ReservationStatus.CANCELLED || r.getStatus() == ReservationStatus.COMPLETED) {
             throw new ReservationNotCancellableException();
         }
-
-        reservation.setStatus(ReservationStatus.CANCELLED);
-        reservationRepository.save(reservation);
+        r.setStatus(ReservationStatus.CANCELLED);
+        return reservationRepository.save(r);
     }
 
+    @Transactional
+    public Reservation complete(UUID id) {
+        Reservation r = find(id);
+        if (r.getStatus() != ReservationStatus.APPROVED) {
+            throw new IllegalStateException("Only APPROVED reservations can be completed");
+        }
+        r.setStatus(ReservationStatus.COMPLETED);
+        return reservationRepository.save(r);
+    }
 
+    public List<Reservation> getForDate(LocalDate date) {
+        return reservationRepository.findByDateOrderByStartTimeAsc(date);
+    }
 
+    public List<Reservation> getForUser(UUID userId) {
+        return reservationRepository.findByUser_IdOrderByDateAsc(userId);
+    }
 
+    public List<Reservation> getPending() {
+        return reservationRepository.findByStatusOrderByDateAsc(ReservationStatus.PENDING);
+    }
 
+    public List<Reservation> getAll() {
+        return reservationRepository.findAllByOrderByDateAsc();
+    }
+
+    private Reservation find(UUID id) {
+        return reservationRepository.findById(id).orElseThrow(ReservationNotFoundException::new);
+    }
+
+    private boolean isTerminal(ReservationStatus s) {
+        return s == ReservationStatus.CANCELLED || s == ReservationStatus.COMPLETED
+            || s == ReservationStatus.DECLINED;
+    }
 }

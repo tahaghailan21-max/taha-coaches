@@ -2,13 +2,16 @@ package com.coaching.taha_coaches.infrastructure.auth;
 
 import com.coaching.taha_coaches.domain.user.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class AuthenticatedUser implements OAuth2User, OidcUser, UserDetails {
@@ -43,7 +46,9 @@ public class AuthenticatedUser implements OAuth2User, OidcUser, UserDetails {
     // ===== Spring Security =====
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        List<GrantedAuthority> all = new ArrayList<>(authorities);
+        all.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        return all;
     }
 
     @Override

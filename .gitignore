@@ -18,8 +18,8 @@ target/
 *.iws
 *.iml
 *.ipr
-#app.properties
-taha-coaches/src/main/resources/application.properties
+#local-only secrets (application.properties is now committed and secret-free)
+taha-coaches/src/main/resources/secrets.properties
 #node modules
 taha-coaches-front/node_modules/
 ### NetBeans ###

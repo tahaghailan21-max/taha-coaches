@@ -1,6 +1,9 @@
 package com.coaching.taha_coaches.domain.reservation;
 
+import com.coaching.taha_coaches.domain.sessiontype.SessionType;
 import com.coaching.taha_coaches.domain.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,21 +25,27 @@ public class Reservation {
     @GeneratedValue
     private UUID id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "session_type_id", nullable = false)
+    private SessionType sessionType;
 
     @Column(nullable = false)
     private LocalDate date;
 
-    @Column(nullable = false)
-    private LocalTime time;
+    @Column(name = "start_time", nullable = false)
+    private LocalTime startTime;
 
-    @Column(nullable = false)
-    private int durationMinutes; // 60 ou 90
+    @Column(name = "end_time", nullable = false)
+    private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private ReservationStatus status = ReservationStatus.PENDING;
 
     @Column(columnDefinition = "TEXT")
@@ -50,11 +59,15 @@ public class Reservation {
         this.createdAt = Instant.now();
     }
 
+    @JsonProperty("userId")
+    public UUID getUserId() { return user != null ? user.getId() : null; }
 
+    @JsonProperty("userName")
+    public String getUserName() { return user != null ? user.getName() : null; }
 
-    public LocalTime getEndTime() {
-        return this.time.plusMinutes(this.durationMinutes);
-    }
+    @JsonProperty("sessionTypeCode")
+    public String getSessionTypeCode() { return sessionType != null ? sessionType.getCode() : null; }
 
-
+    @JsonProperty("durationMinutes")
+    public int getDurationMinutes() { return sessionType != null ? sessionType.getDurationMinutes() : 0; }
 }

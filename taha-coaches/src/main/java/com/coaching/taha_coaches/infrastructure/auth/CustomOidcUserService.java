@@ -2,6 +2,7 @@ package com.coaching.taha_coaches.infrastructure.auth;
 
 import com.coaching.taha_coaches.domain.user.User;
 import com.coaching.taha_coaches.domain.user.UserRepository;
+import com.coaching.taha_coaches.domain.user.UserService;
 import com.coaching.taha_coaches.infrastructure.cloud.CloudflareR2Service;
 import jakarta.transaction.Transactional;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -24,11 +25,14 @@ public class CustomOidcUserService extends OidcUserService {
 
     private final UserRepository userRepository;
     private final CloudflareR2Service r2Service;
+    private final UserService userService;
 
     public CustomOidcUserService(UserRepository userRepository,
-                                 CloudflareR2Service r2Service) {
+                                 CloudflareR2Service r2Service,
+                                 UserService userService) {
         this.userRepository = userRepository;
         this.r2Service = r2Service;
+        this.userService = userService;
     }
 
     @Override
@@ -81,6 +85,8 @@ public class CustomOidcUserService extends OidcUserService {
                     return userRepository.save(newUser);
                 });
 
+
+        user = userService.syncRole(user);
 
         return new AuthenticatedUser(
                 user,
