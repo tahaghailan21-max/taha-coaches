@@ -1,0 +1,15 @@
+{
+  "routes": [
+    "/",
+    "/admin",
+    "/admin/availability",
+    "/admin/chat",
+    "/admin/reservations",
+    "/book",
+    "/chat",
+    "/contact",
+    "/login",
+    "/my-reservations",
+    "/services"
+  ]
+}

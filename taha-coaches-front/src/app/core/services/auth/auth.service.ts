@@ -63,21 +63,36 @@ export class AuthService {
       if (cached) {
         const user = JSON.parse(cached);
         this.currentUserSubject.next(user);
+        // Serve the cached user immediately, but refresh from the server in
+        // the background so fields like `role` stay in sync with the session.
+        this.refreshFromServer();
         return Promise.resolve(user);
       }
     }
 
+    return this.refreshFromServer();
+  }
+
+  refreshFromServer(): Promise<User | null> {
     return firstValueFrom(
       this.http.get<User>(`${this.apiUrl}/api/user/me`, { withCredentials: true })
     )
       .then(user => {
-        this.setCurrentUser(user);
-        return user;
+        if (user) {
+          this.setCurrentUser(user);
+          return user;
+        }
+        this.clearCurrentUser();
+        return null;
       })
       .catch(() => {
         this.clearCurrentUser();
         return null;
       });
+  }
+
+  isAdmin(): boolean {
+    return this.currentUserSubject.value?.role === 'ADMIN';
   }
 
   logout(): Observable<void> {

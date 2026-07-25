@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Taha Trains</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="assets/logo-removebg-preview.png">
+
+  <script>
+    (function () {
+      try {
+        const saved = localStorage.getItem('dark-mode');
+
+        let isDark;
+
+        if (saved !== null) {
+          isDark = saved === 'true';
+        } else {
+          isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+<link rel="stylesheet" href="styles-ABV27AIJ.css"></head>
+<body class="bg-background dark:bg-dark-background">
+<app-root></app-root>
+<script src="polyfills-FFHMD2TL.js" type="module"></script><script src="main-6FPQKHBL.js" type="module"></script></body>
+</html>

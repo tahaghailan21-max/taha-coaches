@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, RouterModule, TranslateModule],
   template: `
 <div class="min-h-screen bg-background dark:bg-dark-background flex flex-col items-center justify-start">
 
@@ -50,6 +51,15 @@ import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
           {{ 'home.introQuote' | translate }}
         </p>
       </div>
+
+      <!-- Hero CTA -->
+      <a routerLink="/book"
+         class="mt-8 inline-flex items-center gap-2.5 px-8 py-4 rounded-full
+                bg-primary text-white font-bold text-lg shadow-xl
+                hover:scale-105 hover:shadow-2xl transition-all duration-200">
+        <i class="bi bi-calendar-plus"></i>
+        {{ 'home.ctaButton' | translate }}
+      </a>
     </div>
   </section>
 
@@ -160,6 +170,13 @@ import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
     <p class="text-secondary dark:text-dark-secondary mb-6">
       {{ 'home.ctaDescription' | translate }}
     </p>
+    <a routerLink="/book"
+       class="inline-flex items-center gap-2.5 px-8 py-4 rounded-full
+              bg-primary dark:bg-dark-primary text-white dark:text-dark-background
+              font-bold text-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200">
+      <i class="bi bi-calendar-plus"></i>
+      {{ 'home.ctaButton' | translate }}
+    </a>
   </section>
 
   <!-- FOOTER -->

@@ -9,6 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AuthService } from './core/services/auth/auth.service';
 import { LanguageService } from './core/services/language/language.service';
+import { environment } from './environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,7 +34,7 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: provideTranslateHttpLoader({
-          prefix: 'http://localhost:8080/api/public/i18n/',
+          prefix: `${environment.apiUrl}/api/public/i18n/`,
           suffix: '',
         }),
       })

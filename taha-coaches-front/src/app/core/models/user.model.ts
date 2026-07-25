@@ -1,4 +1,6 @@
 // src/app/models/user.model.ts
+export type UserRole = 'CLIENT' | 'ADMIN';
+
 export interface User {
   id: string;
   email: string;
@@ -6,5 +8,6 @@ export interface User {
   provider: string;
   providerId: string;
   createdAt: string;
-  avatarUrl?: string; // <- add this
+  avatarUrl?: string;
+  role?: UserRole;
 }
